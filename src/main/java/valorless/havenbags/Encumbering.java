@@ -3,6 +3,7 @@ package valorless.havenbags;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -30,8 +31,13 @@ public class Encumbering implements Listener {
 	private static boolean enabled;
 	private static List<BagWeight> bagWeights = new ArrayList<BagWeight>();
 	private static List<Player> encumbered = new ArrayList<Player>();
-	
-	private static class BagWeight{
+	public final FoliaLib foliaLib;
+
+    public Encumbering() {
+        this.foliaLib = Main.getFoliaLib();
+    }
+
+    private static class BagWeight{
 		public Double weight = 0.0;
 		public Player player = null;
 		public BagWeight(Player player, Double weight) {
@@ -126,11 +132,9 @@ public class Encumbering implements Listener {
 		if(e.getItem().getOwner() != null) {
 			if(e.getItem().getOwner() != player.getUniqueId()) return;
 		}
-		if(HavenBags.IsBag(e.getItem().getItemStack())) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-			    public void run() {
-					UpdateWeight(player);
-			    }
+		if (HavenBags.IsBag(e.getItem().getItemStack())) {
+			foliaLib.getImpl().runLater(() -> {
+				UpdateWeight(player);
 			}, 5L);
 		}
 	}

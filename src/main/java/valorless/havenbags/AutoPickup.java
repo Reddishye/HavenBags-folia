@@ -3,6 +3,7 @@ package valorless.havenbags;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Particle;
@@ -26,6 +27,8 @@ import valorless.valorlessutils.nbt.NBT;
 import valorless.valorlessutils.sound.SFX;
 import valorless.valorlessutils.utils.Utils;
 
+import static valorless.havenbags.Main.foliaLib;
+
 @SuppressWarnings("deprecation")
 public class AutoPickup implements Listener {
 	
@@ -35,11 +38,13 @@ public class AutoPickup implements Listener {
 		public String name;
 		public String displayname;
 		public List<String> entries = new ArrayList<String>();
+		private final FoliaLib foliaLib;
 		
 		public Filter(String name, String displayname, List<String> entries) {
 			this.name = name;
 			this.displayname = displayname;
 			this.entries = entries;
+			this.foliaLib = Main.getFoliaLib();
 		}
 	}
 	
@@ -95,15 +100,13 @@ public class AutoPickup implements Listener {
 		}
 		return filternames;
 	}
-	
+
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent event) {
-		if(Main.config.GetBool("auto-pickup-inventory.enabled")) {
-			if(Main.config.GetBool("auto-pickup-inventory.events.onBlockBreak")) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-				    public void run() {
-				    	FromInventory(event.getPlayer());
-				    }
+		if (Main.config.GetBool("auto-pickup-inventory.enabled")) {
+			if (Main.config.GetBool("auto-pickup-inventory.events.onBlockBreak")) {
+				foliaLib.getImpl().runLater(() -> {
+					FromInventory(event.getPlayer());
 				}, 5L);
 			}
 		}
@@ -164,12 +167,10 @@ public class AutoPickup implements Listener {
 			event.getItem().remove();
 		}
 
-		if(Main.config.GetBool("auto-pickup-inventory.enabled")) {
-			if(Main.config.GetBool("auto-pickup-inventory.events.onItemPickup")) {
-				Bukkit.getScheduler().scheduleSyncDelayedTask(Main.plugin, new Runnable() {
-				    public void run() {
-				    	FromInventory(player);
-				    }
+		if (Main.config.GetBool("auto-pickup-inventory.enabled")) {
+			if (Main.config.GetBool("auto-pickup-inventory.events.onItemPickup")) {
+				foliaLib.getImpl().runLater(() -> {
+					FromInventory(player);
 				}, 5L);
 			}
 		}

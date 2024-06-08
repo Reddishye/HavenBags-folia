@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -32,22 +33,20 @@ import valorless.valorlessutils.nbt.NBTListCompound;
 import valorless.valorlessutils.skulls.SkullCreator;
 
 public class BagData {
-	
+
 	public enum UpdateSource { NULL, PLAYER }
 	
 	private static List<Data> data = new ArrayList<Data>();
 	public static long interval;
-	
+
 	public static void Initiate() {
 		data.clear(); // Just in case
-		interval = Main.config.GetInt("auto-save-interval")*20;
+		interval = Main.config.GetInt("auto-save-interval") * 20;
 		LoadData();
-		Bukkit.getScheduler().scheduleSyncRepeatingTask(Main.plugin, new Runnable() {
-            @Override
-            public void run() {
-            	SaveData();
-            }
-        }, interval, interval);
+		FoliaLib foliaLib = Main.getFoliaLib();
+		foliaLib.getImpl().runTimer(() -> {
+			SaveData();
+		}, interval, interval);
 		Log.Info(Main.plugin, "Loaded bags: " + data.size());
 	}
 	

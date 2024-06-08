@@ -51,7 +51,7 @@ public final class Main extends JavaPlugin implements Listener {
 	public static Translator translator;
 	public static ServerVersion server;
 
-	public FoliaLib foliaLib;
+	public static FoliaLib foliaLib;
 	
 	public String[] commands = {
     		"havenbags", "bags", "bag",
@@ -74,32 +74,32 @@ public final class Main extends JavaPlugin implements Listener {
 		plugins = new Config(this, "plugins.yml");
 		textures = new Config(this, "textures.yml");
 	}
-	
+
 	@SuppressWarnings("unused")
 	boolean ValorlessUtils() {
 		Log.Debug(plugin, "Checking ValorlessUtils");
-		
+
 		int requiresBuild = 227;
-		
+
 		String ver = Bukkit.getPluginManager().getPlugin("ValorlessUtils").getDescription().getVersion();
-		//Log.Debug(plugin, ver);
+		// Log.Debug(plugin, ver);
 		String[] split = ver.split("[.]");
 		int major = Integer.valueOf(split[0]);
 		int minor = Integer.valueOf(split[1]);
 		int hotfix = Integer.valueOf(split[2]);
 		int build = Integer.valueOf(split[3]);
-		
-		if(build < requiresBuild) {
-			Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, new Runnable() {
-        		public void run() {
-        			Log.Error(plugin, String.format("HavenBags requires ValorlessUtils build %s or newer, found %s. (%s)", requiresBuild, build, ver));
-        			Log.Error(plugin, "https://www.spigotmc.org/resources/valorlessutils.109586/");
-        			Bukkit.getPluginManager().disablePlugin(plugin);
-        		}
-    		}, 10);
+
+		if (build < requiresBuild) {
+			FoliaLib foliaLib = Main.getFoliaLib(); // Asumiendo que Main tiene un método getFoliaLib()
+			foliaLib.getImpl().runNextTick(wrappedTask -> {
+				Log.Error(plugin, String.format("HavenBags requires ValorlessUtils build %s or newer, found %s. (%s)", requiresBuild, build, ver));
+				Log.Error(plugin, "https://www.spigotmc.org/resources/valorlessutils.109586/");
+				Bukkit.getPluginManager().disablePlugin(plugin);
+			});
 			return false;
+		} else {
+			return true;
 		}
-		else return true;
 	}
 	
 	@Override
@@ -533,20 +533,16 @@ public final class Main extends JavaPlugin implements Listener {
 		Bukkit.getPluginManager().registerEvents(this, this);
     }
 
-
 	@EventHandler
 	public void UpdateNotification(PlayerJoinEvent e) {
-		Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
-		    public void run() {
-		    	if (config.GetBool("check-updates") && e.getPlayer().isOp() && uptodate == false) {
-					e.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',
+		foliaLib.getImpl().runLater(() -> {
+			if (config.GetBool("check-updates") && e.getPlayer().isOp() && !uptodate) {
+				e.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&',
 						"&7[&aHaven&bBags&7] " + "&fAn update has been found.\nPlease download version&a " + newVersion
-						+ ", &fyou are on version&a " + getDescription().getVersion() + "!"
-						));
-				}
-		    }
+								+ ", &fyou are on version&a " + plugin.getDescription().getVersion() + "!"
+				));
+			}
 		}, 5L);
-		
 	}
     
     void BagConversion() {
@@ -730,7 +726,7 @@ public final class Main extends JavaPlugin implements Listener {
     	}
     }
 
-	public FoliaLib getFoliaLib() {
+	public static FoliaLib getFoliaLib() {
 		return foliaLib;
 	}
 }

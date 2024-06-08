@@ -41,6 +41,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import javax.net.ssl.HttpsURLConnection;
+
+import com.tcoded.folialib.FoliaLib;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
@@ -61,7 +63,7 @@ public class Metrics {
    *     href="https://bstats.org/what-is-my-plugin-id">What is my plugin id?</a>
    */
   @SuppressWarnings("deprecation")
-public Metrics(JavaPlugin plugin, int serviceId) {
+  public Metrics(JavaPlugin plugin, int serviceId) {
     this.plugin = plugin;
     // Get the config file
     File bStatsFolder = new File(plugin.getDataFolder().getParentFile(), "bStats");
@@ -75,14 +77,14 @@ public Metrics(JavaPlugin plugin, int serviceId) {
       config.addDefault("logResponseStatusText", false);
       // Inform the server owners about bStats
       config
-          .options()
-          .header(
-              "bStats (https://bStats.org) collects some basic information for plugin authors, like how\n"
-                  + "many people use their plugin and their total player count. It's recommended to keep bStats\n"
-                  + "enabled, but if you're not comfortable with this, you can turn this setting off. There is no\n"
-                  + "performance penalty associated with having metrics enabled, and data sent to bStats is fully\n"
-                  + "anonymous.")
-          .copyDefaults(true);
+              .options()
+              .header(
+                      "bStats (https://bStats.org) collects some basic information for plugin authors, like how\n"
+                              + "many people use their plugin and their total player count. It's recommended to keep bStats\n"
+                              + "enabled, but if you're not comfortable with this, you can turn this setting off. There is no\n"
+                              + "performance penalty associated with having metrics enabled, and data sent to bStats is fully\n"
+                              + "anonymous.")
+              .copyDefaults(true);
       try {
         config.save(configFile);
       } catch (IOException ignored) {
@@ -95,20 +97,23 @@ public Metrics(JavaPlugin plugin, int serviceId) {
     boolean logSentData = config.getBoolean("logSentData", false);
     boolean logResponseStatusText = config.getBoolean("logResponseStatusText", false);
     metricsBase =
-        new MetricsBase(
-            "bukkit",
-            serverUUID,
-            serviceId,
-            enabled,
-            this::appendPlatformData,
-            this::appendServiceData,
-            submitDataTask -> Bukkit.getScheduler().runTask(plugin, submitDataTask),
-            plugin::isEnabled,
-            (message, error) -> this.plugin.getLogger().log(Level.WARNING, message, error),
-            (message) -> this.plugin.getLogger().log(Level.INFO, message),
-            logErrors,
-            logSentData,
-            logResponseStatusText);
+            new MetricsBase(
+                    "bukkit",
+                    serverUUID,
+                    serviceId,
+                    enabled,
+                    this::appendPlatformData,
+                    this::appendServiceData,
+                    submitDataTask -> {
+                      FoliaLib foliaLib = new FoliaLib(plugin);
+                      foliaLib.getImpl().runNextTick(wrappedTask -> submitDataTask.run());
+                    },
+                    plugin::isEnabled,
+                    (message, error) -> this.plugin.getLogger().log(Level.WARNING, message, error),
+                    (message) -> this.plugin.getLogger().log(Level.INFO, message),
+                    logErrors,
+                    logSentData,
+                    logResponseStatusText);
   }
 
   /** Shuts down the underlying scheduler service. */
