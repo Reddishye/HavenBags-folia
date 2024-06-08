@@ -105,7 +105,7 @@ public class Metrics {
                     this::appendPlatformData,
                     this::appendServiceData,
                     submitDataTask -> {
-                      FoliaLib foliaLib = new FoliaLib(plugin);
+                      FoliaLib foliaLib = Main.getFoliaLib();
                       foliaLib.getImpl().runNextTick(wrappedTask -> submitDataTask.run());
                     },
                     plugin::isEnabled,
