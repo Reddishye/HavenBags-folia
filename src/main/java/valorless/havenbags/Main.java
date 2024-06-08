@@ -1,5 +1,6 @@
 package valorless.havenbags;
 
+import com.tcoded.folialib.FoliaLib;
 import valorless.havenbags.hooks.*;
 import valorless.havenbags.prevention.*;
 import valorless.valorlessutils.ValorlessUtils.Log;
@@ -49,6 +50,8 @@ public final class Main extends JavaPlugin implements Listener {
 	String newVersion = null;
 	public static Translator translator;
 	public static ServerVersion server;
+
+	public FoliaLib foliaLib;
 	
 	public String[] commands = {
     		"havenbags", "bags", "bag",
@@ -56,6 +59,9 @@ public final class Main extends JavaPlugin implements Listener {
 	
 	public void onLoad() {
 		plugin = this;
+
+		foliaLib = new FoliaLib(this);
+
 		Log.Debug(plugin, Bukkit.getVersion());
 		Log.Debug(plugin, Bukkit.getBukkitVersion());
 		ResolveVersion();
@@ -723,4 +729,8 @@ public final class Main extends JavaPlugin implements Listener {
     		if(c) config.SaveConfig();
     	}
     }
+
+	public FoliaLib getFoliaLib() {
+		return foliaLib;
+	}
 }

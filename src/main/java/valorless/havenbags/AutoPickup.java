@@ -128,7 +128,7 @@ public class AutoPickup implements Listener {
 				}
 			}
 		}
-		if(HavenBags.InventoryContainsBag(player) == false) return;
+		if(!HavenBags.InventoryContainsBag(player)) return;
 		ItemStack item = event.getItem().getItemStack();
 		/*
 		if(HavenBags.IsBag(item)) {
@@ -423,7 +423,7 @@ public class AutoPickup implements Listener {
 			
 			
 			
-			if(HavenBags.CanCarry(item, bag.item) == false) return false;
+			if(!HavenBags.CanCarry(item, bag.item)) return false;
 			
 			Log.Debug(Main.plugin, "maxContent:" + maxContent);
 			//if(contSize >= maxContent) return false;
@@ -531,14 +531,14 @@ public class AutoPickup implements Listener {
 	}
 	
 	void PickupSound(Player player) {
-		Double pitch = 1.0;
+		double pitch = 1.0;
 		if(Main.server != ServerVersion.v1_17 && Main.server != ServerVersion.v1_17_1) {
 			pitch = Utils.RandomRange(Main.config.GetFloat("auto-pickup-pitch-min"), Main.config.GetFloat("auto-pickup-pitch-max"));
 		}
 		
 		SFX.Play(Main.config.GetString("auto-pickup-sound"), 
-				Main.config.GetFloat("auto-pickup-volume").floatValue(), 
-				pitch.floatValue(), player);
+				Main.config.GetFloat("auto-pickup-volume").floatValue(),
+                (float) pitch, player);
 		
 	}
 	
@@ -574,18 +574,10 @@ public class AutoPickup implements Listener {
 						item.getType() == Material.BOW ||
 						item.getType() == Material.CROSSBOW ||
 						item.getType() == Material.SHEARS) {
-					if(i == 0 || // Hotbar slots
-							i == 1 ||
-							i == 2 ||
-							i == 3 ||
-							i == 4 ||
-							i == 5 ||
-							i == 6 ||
-							i == 7 ||
-							i == 8) {
+					if(i >= 0 && i <= 9) {
 						continue;
 					}
-						
+
 				}
 				continue;
 			}
